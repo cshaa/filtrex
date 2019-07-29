@@ -11,7 +11,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "test":  "./node_modules/mocha/bin/mocha test",
+    "test": "./node_modules/mocha/bin/mocha test",
     "debug": "./node_modules/mocha/bin/mocha test --inspect-brk"
   },
   "dependencies": {
