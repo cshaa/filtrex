@@ -210,8 +210,8 @@ function filtrexParser() {
                 ['argsList , e', code([1, ',', 3], true)],
             ],
             inSet: [
-                ['e', code(['o ==', 1], true)],
-                ['inSet , e', code([1, '|| o ==', 3], true)],
+                ['e', code(['!Array.isArray(o) ? o == ', 1, ': o.indexOf(', 1, ') >= 0'])],
+                ['inSet , e', code([1, '|| (!Array.isArray(o) ? o == ', 3 ,': o.indexOf(', 3, ') >= 0)'], true)],
             ],
             array: [
                 ['e', code([1])],
