@@ -34,4 +34,12 @@ describe('Object support', () => {
         expect(compileExpression('toString of something')({ something: {}})).equals(undefined);
     });
 
+    it('should support more variable names', () => {
+        expect(compileExpression('$.id == "id1"')({ '$.id': "id1"})).equals(1);
+        expect(compileExpression('__id == "id1"')({ '__id': "id1"})).equals(1);
+        expect(compileExpression('0.id == 1337')({ '0.id': 1337})).equals(1);
+        expect(compileExpression('\'0.\' == 1337')({ '0.': 1337})).equals(1);
+        expect(compileExpression('\'0.000id\' == 1337')({ '0.000id': 1337})).equals(1);
+        expect(compileExpression('\'<id>\' == 1337')({ '<id>': 1337})).equals(1);
+    });
 });
