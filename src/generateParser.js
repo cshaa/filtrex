@@ -41,7 +41,7 @@ var grammar = {
             ['\\s+',  ''], // skip whitespace
             ['[0-9]+(?:\\.[0-9]+)?\\b', 'return "NUMBER";'], // 212.321
 
-            ['[a-zA-Z$_][\\.a-zA-Z0-9$_]*',
+            ['([a-zA-Z_$][\\w$]*(\\[(([0-9]+)|([\'"`][\\w$]+[\'"`]))\\])*)(\\.[\\w$]+(\\[(([0-9]+)|([\'"`][\\w$]+[\'"`]))\\])*)*',
                 `yytext = JSON.stringify(yytext);
                 return "SYMBOL";`
             ], // some.Symbol22
