@@ -5,7 +5,7 @@
   "main": "dist/cjs/filtrex.js",
   "types": "dist/esm/filtrex.d.ts",
   "module": "dist/esm/filtrex.mjs",
-  "repository": "git@github.com:m93a/filtrex.git",
+  "repository": "git@github.com:cshaa/filtrex.git",
   "author": "m93a <m93a.cz@gmail.com>",
   "contributors": [
     "albehrens",
@@ -13,7 +13,7 @@
     "arendjr",
     "bradparks",
     "joewalnes",
-    "m93a",
+    "cshaa",
     "msantos"
   ],
   "license": "MIT",

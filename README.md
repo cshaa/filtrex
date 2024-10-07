@@ -1,9 +1,9 @@
 # Filtrex
-[![Build Status](https://travis-ci.com/m93a/filtrex.svg?branch=master)](https://travis-ci.com/m93a/filtrex)
+[![Build Status](https://travis-ci.com/cshaa/filtrex.svg?branch=master)](https://travis-ci.com/cshaa/filtrex)
 
 ----
 
-**⚠️ UPGRADING TO v3 ⚠️**: If you're using Filtrex v2 and want to upgrade to the new version, check the [changelog](https://github.com/m93a/filtrex/blob/main/CHANGELOG.md) and [this issue](https://github.com/m93a/filtrex/issues/49). If you need help with the migration, feel free to open an issue.
+**⚠️ UPGRADING TO v3 ⚠️**: If you're using Filtrex v2 and want to upgrade to the new version, check the [changelog](https://github.com/cshaa/filtrex/blob/main/CHANGELOG.md) and [this issue](https://github.com/cshaa/filtrex/issues/49). If you need help with the migration, feel free to open an issue.
 
 ----
 
@@ -20,16 +20,16 @@ Filtrex is available as an NPM package via `yarn add filtrex` or `npm install fi
 import { compileExpression } from 'filtrex';
 const f = compileExpression(`category == "meal"`)
 ```
-You can also get the bundled versions from [`./dist/`](https://github.com/m93a/filtrex/tree/main/dist).
+You can also get the bundled versions from [`./dist/`](https://github.com/cshaa/filtrex/tree/main/dist).
 
 
 ## Why?
 
 There are many cases where you want a user to be able enter an arbitrary expression through a user interface. e.g.
 
-*   Plot a chart ([example](https://m93a.github.io/filtrex/example/plot.html))
-*   Filter/searching across items using multiple fields ([example](https://m93a.github.io/filtrex/example/highlight.html))
-*   Colorize items based on values ([example](https://m93a.github.io/filtrex/example/colorize.html))
+*   Plot a chart ([example](https://cshaa.github.io/filtrex/example/plot.html))
+*   Filter/searching across items using multiple fields ([example](https://cshaa.github.io/filtrex/example/highlight.html))
+*   Colorize items based on values ([example](https://cshaa.github.io/filtrex/example/colorize.html))
 *   Implement a browser based spreadsheet
 
 Sure, you could do that with JavaScript and `eval()`, but I'm sure I don't have to tell you how stupid that would be.
@@ -161,7 +161,7 @@ Error                | A general error, typically thrown by Jison when parsing a
 
 To achieve a good UX, it is recommended to continually validate the user's expression and let them know whether it's well-formed. To achieve this, you can try to build their expression and evaluate it on sample data every few milliseconds – if it either throws or returns an error, display that error to them.
 
-Many errors have a unique `I18N_STRING` to help you translate the message to the user's preferred language. Check [errors.mjs](https://github.com/m93a/filtrex/blob/main/src/errors.mjs) for more info.
+Many errors have a unique `I18N_STRING` to help you translate the message to the user's preferred language. Check [errors.mjs](https://github.com/cshaa/filtrex/blob/main/src/errors.mjs) for more info.
 
 
 ## Custom functions and constants
@@ -279,11 +279,11 @@ Because you can use it to make _**filt**e**r**ing **ex**pressions_ – expressio
 
 **License?**
 
-[MIT](https://github.com/m93a/filtrex/raw/main/LICENSE)
+[MIT](https://github.com/cshaa/filtrex/raw/main/LICENSE)
 
 **Unit tests?**
 
-Here: [Source](https://github.com/m93a/filtrex/tree/main/test)
+Here: [Source](https://github.com/cshaa/filtrex/tree/main/test)
 
 **What happens if the expression is malformed?**
 
@@ -295,7 +295,7 @@ Strings in Filtrex are always double-quoted, like this: `"hello"`, never single-
 
 **Can I use dots as property accessors?**
 
-Yes, you can – using a custom prop function! Since this request is a common one, we even ship the required function with Filtrex – it's called [`useDotAccessOperator`](https://github.com/m93a/filtrex/blob/0d371508b274f78931c990b9ebfa865c9a89b970/src/filtrex.mjs#L149). It is enough to do the following:
+Yes, you can – using a custom prop function! Since this request is a common one, we even ship the required function with Filtrex – it's called [`useDotAccessOperator`](https://github.com/cshaa/filtrex/blob/0d371508b274f78931c990b9ebfa865c9a89b970/src/filtrex.mjs#L149). It is enough to do the following:
 ```typescript
 import {
   compileExpression,
@@ -313,14 +313,14 @@ fn({ foo: { bar: 42 } }) // → 42
 **Can I get rid of the UnknownPropertyError?**
 
 If you want to return `undefined` instead of an error when the user accesses an undefined field, you can use the 
-[`useOptionalChaining`](https://github.com/m93a/filtrex/blob/0d371508b274f78931c990b9ebfa865c9a89b970/src/filtrex.mjs#L121) property function. And if you want to combine it with dots as access operators, use the [`useDotAccessOperatorAndOptionalChaining`](https://github.com/m93a/filtrex/blob/0d371508b274f78931c990b9ebfa865c9a89b970/src/filtrex.mjs#L189) prop function.
+[`useOptionalChaining`](https://github.com/cshaa/filtrex/blob/0d371508b274f78931c990b9ebfa865c9a89b970/src/filtrex.mjs#L121) property function. And if you want to combine it with dots as access operators, use the [`useDotAccessOperatorAndOptionalChaining`](https://github.com/cshaa/filtrex/blob/0d371508b274f78931c990b9ebfa865c9a89b970/src/filtrex.mjs#L189) prop function.
 
 
 Contributors
 ------------
 
 * [@joewalnes](https://github.com/joewalnes) Joe Walnes – the original author of this repository
-* [@m93a](https://github.com/m93a) Michal Grňo – maintainer of the NPM package and the current main developer
+* [@cshaa](https://github.com/cshaa) Michal Grňo – maintainer of the NPM package and the current main developer
 * [@msantos](https://github.com/msantos) Michael Santos – quoted symbols, regex matches and numerous fixes
 * [@bradparks](https://github.com/bradparks) Brad Parks – extensible prop function
 * [@arendjr](https://github.com/arendjr) Arend van Beelen jr. – quote escaping in string literals

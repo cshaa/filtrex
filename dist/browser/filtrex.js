@@ -2382,7 +2382,7 @@ var filtrex = (function (exports) {
   }( /*#__PURE__*/_wrapNativeSuper(TypeError));
   /**
    * An internal error. This was not meant to happen, please report
-   * at https://github.com/m93a/filtrex/
+   * at https://github.com/cshaa/filtrex/
    *
    * @prop {string} I18N_STRING has the value `'INTERNAL'`
    */
