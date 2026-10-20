@@ -2504,7 +2504,7 @@ parser.yy = Object.create(std);
  *   customProp: useOptionalChaining
  * });
  *
- * fn({ bar: null }) // → null
+ * fn({ bar: null }) // → { success: true, value: null }
  * ```
  */
 function useOptionalChaining(name, get, obj, type) {
@@ -2530,7 +2530,7 @@ function useOptionalChaining(name, get, obj, type) {
  *   customProp: useDotAccessOperator
  * });
  *
- * fn({ foo: { bar: 42 } }) // → 42
+ * fn({ foo: { bar: 42 } }) // → { success: true, value: 42 }
  * ```
  */
 function useDotAccessOperator(name, get, obj, type) {
@@ -2563,7 +2563,7 @@ function useDotAccessOperator(name, get, obj, type) {
  *   customProp: useDotAccessOperatorAndOptionalChaining
  * });
  *
- * fn({ foo: null }) // → null
+ * fn({ foo: null }) // → { success: true, value: null }
  * ```
  */
 function useDotAccessOperatorAndOptionalChaining(name, get, obj, type) {
@@ -2593,8 +2593,8 @@ function useDotAccessOperatorAndOptionalChaining(name, get, obj, type) {
  * let myfilter = compileExpression(expression);
  *
  * // Execute function
- * myfilter({transactions: 3, profit:-40.5}); // returns 1
- * myfilter({transactions: 3, profit:-14.5}); // returns 0
+ * myfilter({transactions: 3, profit:-40.5}); // returns { success: true, value: true }
+ * myfilter({transactions: 3, profit:-14.5}); // returns { success: true, value: false }
  *
  * @param expression
  * The expression to be parsed. Under the hood, the expression gets compiled to a clean and fast JavaScript function.
@@ -2752,9 +2752,15 @@ function compileExpression(expression, options) {
   let func = new Function("call", "ops", "std", "prop", "data", js.join(""));
   return function (data) {
     try {
-      return func(createCall(functions), operators, std, prop, data);
+      return {
+        success: true,
+        value: func(createCall(functions), operators, std, prop, data),
+      };
     } catch (e) {
-      return e;
+      return {
+        success: false,
+        reason: e,
+      };
     }
   };
 }

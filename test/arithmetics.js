@@ -3,7 +3,10 @@ const { compileExpression } = require("../dist/cjs/filtrex");
 const { describe, it } = require("mocha");
 const { expect } = require("chai");
 
-const eval = (str, obj) => compileExpression(str)(obj);
+const eval = (str, obj) => {
+  const result = compileExpression(str)(obj);
+  return result.success ? result.value : result.reason;
+};
 
 describe("Arithmetics", () => {
   it("can do simple numeric expressions", () => {

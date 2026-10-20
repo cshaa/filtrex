@@ -44,7 +44,7 @@ function buildTable(tbody, data) {
 function updateExpression() {
   // Default highlighter will not highlight anything
   var nullHighlighter = function (item) {
-    return false;
+    return { success: true, value: false };
   };
 
   var input = $(".expression");
@@ -79,7 +79,8 @@ function highlightRows(highlighter) {
   $(".data > tbody > tr").each(function (i, rowEl) {
     var row = $(rowEl);
     var item = row.data("item");
-    var shouldHighlight = highlighter(item); // <-- Compiled function from Filtrex!
+    var result = highlighter(item);
+    var shouldHighlight = result.success && result.value; // <-- Compiled function from Filtrex!
     row.css("background-color", shouldHighlight ? "#ff5" : "#fff");
   });
 }

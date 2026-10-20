@@ -45,7 +45,7 @@ function buildTable(tbody, data) {
 function updateExpression() {
   // Default colorizer will not color anything
   var nullColorizer = function (item) {
-    return 0;
+    return { success: true, value: 0 };
   };
 
   var input = $(".expression");
@@ -95,7 +95,8 @@ function colorizeRows(colorizer) {
     var row = $(rowEl);
     var item = row.data("item");
 
-    var result = colorizer(item); // <-- Compiled function from Filtrex!
+    var output = colorizer(item); // <-- Compiled function from Filtrex!
+    var result = output.success ? output.value : output.reason;
     row.find(".expression-result").text(result);
 
     // Map that to index in colorScale array.

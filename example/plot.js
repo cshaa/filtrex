@@ -50,7 +50,8 @@ function updateExpression() {
 function render(plotFunction) {
   var data = [];
   for (var x = -10; x <= 10; x += 0.1) {
-    var y = plotFunction({ x: x }); // <-- Execute Filtrex expression from user
+    var result = plotFunction({ x: x }); // <-- Execute Filtrex expression from user
+    var y = result.success ? result.value : null;
     data.push([x, y]);
   }
   $.plot($(".plot"), [data], {});

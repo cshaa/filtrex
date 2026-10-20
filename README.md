@@ -58,8 +58,8 @@ const expression = `transactions <= 5 and abs(profit) > 20.5`;
 const myfilter = compileExpression(expression);
 
 // Execute the function on real data
-myfilter({ transactions: 3, profit: -40.5 }); // → true
-myfilter({ transactions: 3, profit: -14.5 }); // → false
+myfilter({ transactions: 3, profit: -40.5 }); // → { success: true, value: true }
+myfilter({ transactions: 3, profit: -14.5 }); // → { success: true, value: false }
 ```
 
 [→ Try it!](https://codesandbox.io/p/devbox/xenodochial-albattani-gvl8jc?file=%2Findex.ts)
@@ -152,7 +152,30 @@ There are 5 types in Filtrex: numbers, strings, booleans and arrays & objects of
 
 ## Errors
 
-Filtrex may throw during the compilation of an expression (for example if it's malformed, or when you supply invalid options). However, it will never throw during the execution of an expression – instead it will _return_ the corresponding error. It is intentional: this way you don't have to be too cautious when executing user-defined filters even in critical code.
+Filtrex may throw during the compilation of an expression (for example if it's malformed, or when you supply invalid options). However, a compiled function will never throw during execution. It returns a Result object: `{ success: true, value }` when evaluation succeeds, or `{ success: false, reason: error }` when it fails.
+
+Check `.success` before reading `.value` or `.reason`:
+
+```typescript
+const fn = compileExpression("missing == 1");
+const result = fn({ a: 1 });
+
+if (result.success) {
+  console.log(result.value);
+} else {
+  console.error(result.reason); // UnknownPropertyError
+}
+```
+
+Result objects are always truthy, even when evaluation fails or the value is false. When filtering an array, unwrap the result instead of passing the compiled function directly to `.filter()`:
+
+```typescript
+const matches = [{ a: 1 }].filter((data) => {
+  const result = fn(data);
+  return result.success && result.value;
+});
+// → []
+```
 
 | Error type           | Meaning                                                                                                                                                                                                                                                                         |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -162,7 +185,7 @@ Filtrex may throw during the compilation of an expression (for example if it's m
 | UnknownPropertyError | The user attempted to access a property which is not present in the `data` object, nor in the `constants`. If the property is meant to be empty, use `undefined` or `null` as its value. If you need to use optional properties in your `data`, define a `customProp` function. |
 | Error                | A general error, typically thrown by Jison when parsing a malformed expression.                                                                                                                                                                                                 |
 
-To achieve a good UX, it is recommended to continually validate the user's expression and let them know whether it's well-formed. To achieve this, you can try to build their expression and evaluate it on sample data every few milliseconds – if it either throws or returns an error, display that error to them.
+To achieve a good UX, it is recommended to continually validate the user's expression and let them know whether it's well-formed. To achieve this, you can try to build their expression and evaluate it on sample data every few milliseconds – if compilation throws or execution returns `success: false`, display the error or the result's `reason` to them.
 
 Many errors have a unique `I18N_STRING` to help you translate the message to the user's preferred language. Check [errors.mjs](https://github.com/cshaa/filtrex/blob/main/src/errors.mjs) for more info.
 
@@ -183,8 +206,8 @@ let options = {
 // Compile expression to executable function
 let myfilter = compileExpression("strlen(firstname) > 5", options);
 
-myfilter({ firstname: "Joe" }); // → false
-myfilter({ firstname: "Joseph" }); // → true
+myfilter({ firstname: "Joe" }); // → { success: true, value: false }
+myfilter({ firstname: "Joseph" }); // → { success: true, value: true }
 ```
 
 [→ Try it!](https://runkit.com/embed/78cxrv824ba2)
@@ -198,7 +221,7 @@ const options = {
 const fn = compileExpression(`2 * pi * radius`, options);
 
 fn({ radius: 1 / 2 });
-// → Math.PI
+// → { success: true, value: Math.PI }
 ```
 
 [→ Try it!](https://runkit.com/embed/r2uvb1issq94)
@@ -211,7 +234,7 @@ const data = { a: "a_data ", b: "b_data " };
 const expr = `'a' + a + 'b' + b`;
 
 compileExpression(expr, options)(data);
-// → "a_data a_const b_data b_data"
+// → { success: true, value: "a_data a_const b_data b_data" }
 ```
 
 [→ Try it!](https://runkit.com/embed/16nyj1esa1ed)
@@ -234,7 +257,7 @@ const options = {
 const data = { a: matrix([1, 2, 3]), b: matrix([-1, 0, 1]) };
 
 compileExpression(`-a + b`, options)(data);
-// → matrix([-2, -2, -2])
+// → { success: true, value: matrix([-2, -2, -2]) }
 ```
 
 [→ Try it!](https://runkit.com/embed/3fxrsd05rqx5)
@@ -265,9 +288,9 @@ let options = {
 
 let myfilter = compileExpression("Bob and Alice or Cecil", options);
 
-myfilter("Bob is boring"); // → false
-myfilter("Bob met Alice"); // → true
-myfilter("Cecil is cool"); // → true
+myfilter("Bob is boring"); // → { success: true, value: false }
+myfilter("Bob met Alice"); // → { success: true, value: true }
+myfilter("Cecil is cool"); // → { success: true, value: true }
 ```
 
 [→ Try it!](https://runkit.com/embed/df14qhryj0o4)
@@ -294,7 +317,7 @@ Here: [Source](https://github.com/cshaa/filtrex/tree/main/test)
 
 **What happens if the expression is malformed?**
 
-Calling `compileExpression()` with a malformed expression will throw an exception. You can catch that and display feedback to the user. A good UI pattern is to attempt to compile on each change (properly [debounced](https://medium.com/@jamischarles/what-is-debouncing-2505c0648ff1), of course) and continuously indicate whether the expression is valid. On the other hand, once the expression is successfully compiled, it will never throw – this is to prevent the user from making your program fail when you expect it the least – a compiled expression that fails at runtime will **return** an error.
+Calling `compileExpression()` with a malformed expression will throw an exception. You can catch that and display feedback to the user. A good UI pattern is to attempt to compile on each change (properly [debounced](https://medium.com/@jamischarles/what-is-debouncing-2505c0648ff1), of course) and continuously indicate whether the expression is valid. On the other hand, once the expression is successfully compiled, it will never throw – this is to prevent the user from making your program fail when you expect it the least – a compiled expression that fails at runtime will return `{ success: false, reason: error }`.
 
 **Strings don't work! I can't access a property!**
 
@@ -312,7 +335,7 @@ const fn = compileExpression(expr, {
   customProp: useDotAccessOperator,
 });
 
-fn({ foo: { bar: 42 } }); // → 42
+fn({ foo: { bar: 42 } }); // → { success: true, value: 42 }
 ```
 
 **Can I get rid of the UnknownPropertyError?**

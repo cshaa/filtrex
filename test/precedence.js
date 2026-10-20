@@ -8,7 +8,10 @@ const assertArrays = require("chai-arrays");
 chai.use(assertArrays);
 const { expect } = chai;
 
-const eval = (str, obj) => compileExpression(str)(obj);
+const eval = (str, obj) => {
+  const result = compileExpression(str)(obj);
+  return result.success ? result.value : result.reason;
+};
 
 const numbers = [
   { a: 1, b: 2, c: 3, d: 4 },

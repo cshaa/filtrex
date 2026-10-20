@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased (4.0.0)
+
+### Breaking Changes
+
+- Compiled expressions now return `{ success: true, value }` on success or `{ success: false, reason: error }` on runtime failure, implementing the Result approach proposed in [#65](https://github.com/cshaa/filtrex/issues/65). Runtime errors are still caught; compile-time errors still throw.
+- To migrate, replace `fn(data)` with `fn(data).value` where success is already known. Otherwise check `.success` before reading `.value` or handling `.reason`. For array filtering, use `array.filter(data => { const result = fn(data); return result.success && result.value; })` instead of `array.filter(fn)`.
+
 ## [3.1.0](https://github.com/cshaa/filtrex/releases/tag/v3.1.0)
 
 - Change links to `github.com/m93a` to `github.com/cshaa` ([#62](https://github.com/cshaa/filtrex/pull/62))

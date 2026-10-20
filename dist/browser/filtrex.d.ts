@@ -1,3 +1,7 @@
+export type FiltrexResult =
+  | { success: true; value: any }
+  | { success: false; reason: any };
+
 /**
  * A simple, safe, JavaScript expression engine, allowing end-users to enter arbitrary expressions without p0wning you.
  *
@@ -9,8 +13,8 @@
  * let myfilter = compileExpression(expression);
  *
  * // Execute function
- * myfilter({transactions: 3, profit:-40.5}); // returns 1
- * myfilter({transactions: 3, profit:-14.5}); // returns 0
+ * myfilter({transactions: 3, profit:-40.5}); // returns { success: true, value: true }
+ * myfilter({transactions: 3, profit:-14.5}); // returns { success: true, value: false }
  *
  * @param expression
  * The expression to be parsed. Under the hood, the expression gets compiled to a clean and fast JavaScript function.
@@ -57,7 +61,7 @@
 export function compileExpression(
   expression: string,
   options?: Options,
-): (obj: any) => any;
+): (obj: any) => FiltrexResult;
 
 export interface Options {
   /**
@@ -96,14 +100,13 @@ export interface Options {
    *   // your optimized code
    * }
    *
-   * let myfilter = compileExpression(
-   *   'Bob and Alice or Cecil', {},
-   *   (word, _, string) => containsWord(string, word)
-   * );
+   * let myfilter = compileExpression('Bob and Alice or Cecil', {
+   *   customProp: (word, _, string) => containsWord(string, word)
+   * });
    *
-   * myfilter("Bob is boring"); // returns false
-   * myfilter("Bob met Alice"); // returns true
-   * myfilter("Cecil is cool"); // returns true
+   * myfilter("Bob is boring"); // returns { success: true, value: false }
+   * myfilter("Bob met Alice"); // returns { success: true, value: true }
+   * myfilter("Cecil is cool"); // returns { success: true, value: true }
    */
   customProp?: (
     name: string,
@@ -156,7 +159,7 @@ export interface Operators {
  *   customProp: useOptionalChaining
  * });
  *
- * fn({ bar: null }) // → null
+ * fn({ bar: null }) // → { success: true, value: null }
  * ```
  */
 export function useOptionalChaining(
@@ -184,7 +187,7 @@ export function useOptionalChaining(
  *   customProp: useDotAccessOperator
  * });
  *
- * fn({ foo: { bar: 42 } }) // → 42
+ * fn({ foo: { bar: 42 } }) // → { success: true, value: 42 }
  * ```
  */
 export function useDotAccessOperator(
@@ -210,7 +213,7 @@ export function useDotAccessOperator(
  *   customProp: useDotAccessOperatorAndOptionalChaining
  * });
  *
- * fn({ foo: null }) // → null
+ * fn({ foo: null }) // → { success: true, value: null }
  * ```
  */
 export function useDotAccessOperatorAndOptionalChaining(

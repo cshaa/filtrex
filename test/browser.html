@@ -10,7 +10,7 @@
       const expr = "(1 in (1, 2, 3), 1 + one(), PI)";
       const extraFunctions = { one: () => 1 };
       const f = filtrex.compileExpression(expr, { extraFunctions });
-      const result = f(Math);
+      const result = f(Math).value;
 
       if (!Array.isArray(result)) throw "Not an array";
       if (result.length !== 3) throw "Incorrect length";

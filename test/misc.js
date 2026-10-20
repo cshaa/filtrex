@@ -13,7 +13,10 @@ const assertArrays = require("chai-arrays");
 chai.use(assertArrays);
 const { expect } = chai;
 
-const eval = (str, obj) => compileExpression(str)(obj);
+const eval = (str, obj) => {
+  const result = compileExpression(str)(obj);
+  return result.success ? result.value : result.reason;
+};
 
 describe("Various other things", () => {
   it("in / not in", () => {
@@ -95,29 +98,29 @@ describe("Various other things", () => {
     var kitchenSink = compileExpression(
       "if 4 > lowNumber * 2 and (max(a, b) < 20 or foo) then 1.1 else 9.4",
     );
-    expect(kitchenSink({ lowNumber: 1.5, a: 10, b: 12, foo: false })).equals(
-      1.1,
-    );
-    expect(kitchenSink({ lowNumber: 3.5, a: 10, b: 12, foo: false })).equals(
-      9.4,
-    );
+    expect(
+      kitchenSink({ lowNumber: 1.5, a: 10, b: 12, foo: false }).value,
+    ).equals(1.1);
+    expect(
+      kitchenSink({ lowNumber: 3.5, a: 10, b: 12, foo: false }).value,
+    ).equals(9.4);
   });
 
   it("custom functions", () => {
     let triple = (x) => x * 3;
     let options = { extraFunctions: { triple } };
-    expect(compileExpression("triple(v)", options)({ v: 7 })).equals(21);
+    expect(compileExpression("triple(v)", options)({ v: 7 }).value).equals(21);
   });
 
   it("custom property function basics", () => {
     expect(
-      compileExpression("a", { customProp: (name) => name === "a" })(),
+      compileExpression("a", { customProp: (name) => name === "a" })().value,
     ).equals(true);
 
     expect(
       compileExpression("a + bb + ccc", {
         customProp: (name) => name.length,
-      })(),
+      })().value,
     ).equals(6);
 
     expect(
@@ -125,20 +128,20 @@ describe("Various other things", () => {
         a: 1,
         b: 2,
         c: 3,
-      }),
+      }).value,
     ).equals(7);
 
     expect(
       compileExpression("a", { customProp: (name, get) => get(name) })({
         a: true,
-      }),
+      }).value,
     ).equals(true);
 
     let object = { a: 2 };
     expect(
       compileExpression("a", { customProp: (_, __, obj) => obj === object })(
         object,
-      ),
+      ).value,
     ).equals(true);
   });
 
@@ -146,8 +149,10 @@ describe("Various other things", () => {
     let textToSearch =
       "able was i ere I saw elba\nthe Rain in spain falls MAINLY on the plain";
     let doesTextMatch = (name) => textToSearch.indexOf(name) !== -1;
-    let evalProp = (exp) =>
-      compileExpression(exp, { customProp: doesTextMatch })();
+    let evalProp = (exp) => {
+      const result = compileExpression(exp, { customProp: doesTextMatch })();
+      return result.success ? result.value : result.reason;
+    };
 
     expect(evalProp("able and was and i")).equals(true);
     expect(evalProp("able and was and dog")).equals(false);
@@ -164,8 +169,14 @@ describe("Various other things", () => {
 
     let proxy = (name, get) =>
       tripleName(name) ? 3 * get(tripleName(name)) : get(name);
-    let evalProp = (exp) =>
-      compileExpression(exp, { customProp: proxy })({ a: 1, b: 2, c: 3 });
+    let evalProp = (exp) => {
+      const result = compileExpression(exp, { customProp: proxy })({
+        a: 1,
+        b: 2,
+        c: 3,
+      });
+      return result.success ? result.value : result.reason;
+    };
 
     expect(evalProp("a")).equals(1);
     expect(evalProp("triple_a")).equals(3);
@@ -183,7 +194,10 @@ describe("Various other things", () => {
 
   it("doesn't recognise non-callable values as extra functions", () => {
     let options = { extraFunctions: { sqrt: undefined, a: 42, b: {} } };
-    let eval = (str) => compileExpression(str, options)();
+    let eval = (str) => {
+      const result = compileExpression(str, options)();
+      return result.success ? result.value : result.reason;
+    };
 
     expect(eval("a()")).is.instanceOf(ReferenceError);
     expect(eval("b()")).is.instanceOf(ReferenceError);
@@ -203,23 +217,24 @@ describe("Various other things", () => {
   it("constants basics", () => {
     const options = { constants: { pi: Math.PI, true: true, false: false } };
 
-    expect(compileExpression("2 * pi * radius", options)({ radius: 6 })).equals(
-      2 * Math.PI * 6,
-    );
+    expect(
+      compileExpression("2 * pi * radius", options)({ radius: 6 }).value,
+    ).equals(2 * Math.PI * 6);
 
     expect(
-      compileExpression("not true == false and not false == true", options)(),
+      compileExpression("not true == false and not false == true", options)()
+        .value,
     ).equals(true);
 
-    expect(compileExpression("pi", options)({ pi: 3 })).equals(Math.PI);
+    expect(compileExpression("pi", options)({ pi: 3 }).value).equals(Math.PI);
 
-    expect(compileExpression(`'pi'`, options)({ pi: 3 })).equals(3);
+    expect(compileExpression(`'pi'`, options)({ pi: 3 }).value).equals(3);
 
     const options2 = { constants: { a: "a_const " } };
     const data = { a: "a_data ", b: "b_data " };
     const expr = `'a' + a + 'b' + b`;
 
-    expect(compileExpression(expr, options2)(data)).equals(
+    expect(compileExpression(expr, options2)(data).value).equals(
       "a_data a_const b_data b_data ",
     );
   });
@@ -245,7 +260,7 @@ describe("Various other things", () => {
       customProp: useDotAccessOperator,
     });
 
-    expect(fn({ foo: { bar: 42 } })).equals(42);
+    expect(fn({ foo: { bar: 42 } }).value).equals(42);
   });
 
   it("useOptionalChaining work", () => {
@@ -255,8 +270,8 @@ describe("Various other things", () => {
       customProp: useOptionalChaining,
     });
 
-    expect(fn({ foo: null })).equals(null);
-    expect(fn({ foo: { bar: 42 } })).equals(42);
+    expect(fn({ foo: null }).value).equals(null);
+    expect(fn({ foo: { bar: 42 } }).value).equals(42);
   });
 
   it("useDotAccessOperatorAndOptionalChaining works", () => {
@@ -269,9 +284,93 @@ describe("Various other things", () => {
     const fn1 = compileExpression(expr1, options);
     const fn2 = compileExpression(expr2, options);
 
-    expect(fn1({ foo: null })).equals(null);
-    expect(fn1({ foo: { bar: 42 } })).equals(42);
-    expect(fn2({ foo: null })).equals(null);
-    expect(fn2({ foo: { bar: 42 } })).equals(42);
+    expect(fn1({ foo: null }).value).equals(null);
+    expect(fn1({ foo: { bar: 42 } }).value).equals(42);
+    expect(fn2({ foo: null }).value).equals(null);
+    expect(fn2({ foo: { bar: 42 } }).value).equals(42);
+  });
+});
+
+describe("Result return values", () => {
+  it("wraps successful values, including falsy values and errors", () => {
+    const fn = compileExpression("value");
+    const values = [
+      42,
+      true,
+      false,
+      0,
+      "",
+      null,
+      undefined,
+      [1, 2],
+      { a: 1 },
+      new Error("value"),
+    ];
+
+    for (const value of values) {
+      const result = fn({ value });
+      expect(result).to.deep.equal({ success: true, value });
+      expect(result.value).equals(value);
+    }
+  });
+
+  it("returns an UnknownPropertyError as the failure reason", () => {
+    const result = compileExpression("missing == 1")({ a: 1 });
+
+    expect(result).to.have.all.keys("success", "reason");
+    expect(result.success).equals(false);
+    expect(result.reason).is.instanceOf(ReferenceError);
+    expect(result.reason.constructor.name).equals("UnknownPropertyError");
+    expect(result.reason.I18N_STRING).equals("UNKNOWN_PROPERTY");
+    expect(result.reason.propertyName).equals("missing");
+  });
+
+  it("returns a failure for a wrong-type operation", () => {
+    const result = compileExpression("1 + value")({ value: true });
+
+    expect(result).to.have.all.keys("success", "reason");
+    expect(result.success).equals(false);
+    expect(result.reason).is.instanceOf(TypeError);
+    expect(result.reason.I18N_STRING).equals("UNEXPECTED_TYPE");
+  });
+
+  it("never throws runtime errors, even non-Error values", () => {
+    for (const reason of [
+      new Error("failure"),
+      "failure",
+      null,
+      undefined,
+      false,
+      0,
+    ]) {
+      const fn = compileExpression("fail()", {
+        extraFunctions: {
+          fail: () => {
+            throw reason;
+          },
+        },
+      });
+      let result;
+
+      expect(() => {
+        result = fn({});
+      }).does.not.throw();
+      expect(result).to.deep.equal({ success: false, reason });
+      expect(result.reason).equals(reason);
+    }
+  });
+
+  it("still throws compile-time errors for malformed expressions and bad options", () => {
+    expect(() => compileExpression("1 +")).throws();
+    expect(() => compileExpression("1", { unknown: true })).throws(
+      TypeError,
+      "Unknown option: unknown",
+    );
+  });
+
+  it("does not keep failed expressions when filtering by their value", () => {
+    const fn = compileExpression("missing == 1");
+    expect([{ a: 1 }].filter((obj) => fn(obj).value)).to.deep.equal([]);
+    expect(compileExpression("nonexisting")({}).success).equals(false);
   });
 });
