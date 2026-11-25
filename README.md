@@ -160,11 +160,21 @@ Filtrex may throw during the compilation of an expression (for example if it's m
 | UnexpectedTypeError  | The user passed a different type than the one accepted by the function or operator.                                                                                                                                                                                             |
 | UnknownFunctionError | The user attempted to call a function which is not a predefined function, nor specified in `options.extraFunctions`.                                                                                                                                                            |
 | UnknownPropertyError | The user attempted to access a property which is not present in the `data` object, nor in the `constants`. If the property is meant to be empty, use `undefined` or `null` as its value. If you need to use optional properties in your `data`, define a `customProp` function. |
-| Error                | A general error, typically thrown by Jison when parsing a malformed expression.                                                                                                                                                                                                 |
+| ExpressionParseError | The expression contains unrecognized text or a token that is not valid at that point.                                                                                                                                                                                           |
 
 To achieve a good UX, it is recommended to continually validate the user's expression and let them know whether it's well-formed. To achieve this, you can try to build their expression and evaluate it on sample data every few milliseconds – if it either throws or returns an error, display that error to them.
 
 Many errors have a unique `I18N_STRING` to help you translate the message to the user's preferred language. Check [errors.mjs](https://github.com/cshaa/filtrex/blob/main/src/errors.mjs) for more info.
+
+When `compileExpression` throws an `ExpressionParseError`, it retains the
+English `message` and also provides a one-based `line` and these translation
+keys:
+
+- `UNRECOGNIZED_TEXT`: the lexer could not recognize the input. The `token`
+  is `null` and `expected` is empty.
+- `UNEXPECTED_TOKEN`: the parser recognized a token but did not expect it.
+  `token` is its name (for example, `")"` or `"EndOfExpression"`) and
+  `expected` is an array of token names that would be valid there.
 
 ## Custom functions and constants
 

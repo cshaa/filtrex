@@ -2261,6 +2261,28 @@ class UnexpectedTypeError extends TypeError {
 }
 
 /**
+ * Compile time error – the expression contains unrecognized text or a token
+ * that is not valid in the current parser state.
+ *
+ * @prop {string} I18N_STRING – 'UNRECOGNIZED_TEXT' or 'UNEXPECTED_TOKEN'
+ * @prop {number} line – one-based line number
+ * @prop {string | null} token – unexpected parser token, or null for a lexical error
+ * @prop {string[]} expected – valid parser tokens, empty for a lexical error
+ */
+class ExpressionParseError extends Error {
+  constructor(message, _ref) {
+    let { token, line, expected = [] } = _ref;
+    super(message);
+    this.I18N_STRING =
+      token === null ? "UNRECOGNIZED_TEXT" : "UNEXPECTED_TOKEN";
+    this.line = line + 1;
+    this.token = token === null ? null : String(token);
+    // Jison wraps its token names in single quotes for the English message.
+    this.expected = expected.map((name) => name.slice(1, -1));
+  }
+}
+
+/**
  * An internal error. This was not meant to happen, please report
  * at https://github.com/cshaa/filtrex/
  *
@@ -2485,6 +2507,9 @@ const std = {
   },
 };
 parser.yy = Object.create(std);
+parser.yy.parseError = (message, details) => {
+  throw new ExpressionParseError(message, details);
+};
 
 /**
  * A custom prop function which doesn't throw an UnknownPropertyError
@@ -2724,8 +2749,8 @@ function compileExpression(expression, options) {
       customProp(name, safeGetter(obj), obj, type);
   }
   function createCall(fns) {
-    return function call(_ref) {
-      let { name } = _ref;
+    return function call(_ref2) {
+      let { name } = _ref2;
       for (
         var _len = arguments.length,
           args = new Array(_len > 1 ? _len - 1 : 0),
@@ -2740,8 +2765,8 @@ function compileExpression(expression, options) {
       throw new UnknownFunctionError(name);
     };
   }
-  function prop(_ref2, obj) {
-    let { name, type } = _ref2;
+  function prop(_ref3, obj) {
+    let { name, type } = _ref3;
     if (type === "unescaped" && hasOwnProperty(constants, name))
       return constants[name];
     return nakedProp(name, obj, type);

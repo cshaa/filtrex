@@ -15,6 +15,7 @@ import {
   UnknownFunctionError,
   UnknownPropertyError,
   UnknownOptionError,
+  ExpressionParseError,
   InternalError,
 } from "./errors.mjs";
 
@@ -131,6 +132,9 @@ const std = {
 };
 
 parser.yy = Object.create(std);
+parser.yy.parseError = (message, details) => {
+  throw new ExpressionParseError(message, details);
+};
 
 /**
  * A custom prop function which doesn't throw an UnknownPropertyError
