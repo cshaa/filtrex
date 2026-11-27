@@ -76,6 +76,27 @@ export class UnexpectedTypeError extends TypeError {
 }
 
 /**
+ * Compile time error – the expression contains unrecognized text or a token
+ * that is not valid in the current parser state.
+ *
+ * @prop {string} I18N_STRING – 'UNRECOGNIZED_TEXT' or 'UNEXPECTED_TOKEN'
+ * @prop {number} line – one-based line number
+ * @prop {string | null} token – unexpected parser token, or null for a lexical error
+ * @prop {string[]} expected – valid parser tokens, empty for a lexical error
+ */
+export class ExpressionParseError extends Error {
+  constructor(message, { token, line, expected = [] }) {
+    super(message);
+    this.I18N_STRING =
+      token === null ? "UNRECOGNIZED_TEXT" : "UNEXPECTED_TOKEN";
+    this.line = line + 1;
+    this.token = token === null ? null : String(token);
+    // Jison wraps its token names in single quotes for the English message.
+    this.expected = expected.map((name) => name.slice(1, -1));
+  }
+}
+
+/**
  * An internal error. This was not meant to happen, please report
  * at https://github.com/cshaa/filtrex/
  *

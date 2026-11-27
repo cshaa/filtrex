@@ -2589,20 +2589,52 @@ var filtrex = (function (exports) {
   })(/*#__PURE__*/ _wrapNativeSuper(TypeError));
 
   /**
+   * Compile time error – the expression contains unrecognized text or a token
+   * that is not valid in the current parser state.
+   *
+   * @prop {string} I18N_STRING – 'UNRECOGNIZED_TEXT' or 'UNEXPECTED_TOKEN'
+   * @prop {number} line – one-based line number
+   * @prop {string | null} token – unexpected parser token, or null for a lexical error
+   * @prop {string[]} expected – valid parser tokens, empty for a lexical error
+   */
+  var ExpressionParseError = /*#__PURE__*/ (function (_Error) {
+    function ExpressionParseError(message, _ref) {
+      var _this5;
+      var token = _ref.token,
+        line = _ref.line,
+        _ref$expected = _ref.expected,
+        expected = _ref$expected === void 0 ? [] : _ref$expected;
+      _classCallCheck(this, ExpressionParseError);
+      _this5 = _callSuper(this, ExpressionParseError, [message]);
+      _this5.I18N_STRING =
+        token === null ? "UNRECOGNIZED_TEXT" : "UNEXPECTED_TOKEN";
+      _this5.line = line + 1;
+      _this5.token = token === null ? null : String(token);
+      // Jison wraps its token names in single quotes for the English message.
+      _this5.expected = expected.map(function (name) {
+        return name.slice(1, -1);
+      });
+      return _this5;
+    }
+    _inherits(ExpressionParseError, _Error);
+    return _createClass(ExpressionParseError);
+  })(/*#__PURE__*/ _wrapNativeSuper(Error));
+
+  /**
    * An internal error. This was not meant to happen, please report
    * at https://github.com/cshaa/filtrex/
    *
    * @prop {string} I18N_STRING has the value `'INTERNAL'`
    */
-  var InternalError = /*#__PURE__*/ (function (_Error) {
+  var InternalError = /*#__PURE__*/ (function (_Error2) {
     function InternalError(message) {
-      var _this5;
+      var _this6;
       _classCallCheck(this, InternalError);
-      _this5 = _callSuper(this, InternalError, [message]);
-      _defineProperty(_this5, "I18N_STRING", "INTERNAL");
-      return _this5;
+      _this6 = _callSuper(this, InternalError, [message]);
+      _defineProperty(_this6, "I18N_STRING", "INTERNAL");
+      return _this6;
     }
-    _inherits(InternalError, _Error);
+    _inherits(InternalError, _Error2);
     return _createClass(InternalError);
   })(/*#__PURE__*/ _wrapNativeSuper(Error));
 
@@ -2828,6 +2860,9 @@ var filtrex = (function (exports) {
     },
   };
   parser.yy = Object.create(std);
+  parser.yy.parseError = function (message, details) {
+    throw new ExpressionParseError(message, details);
+  };
 
   /**
    * A custom prop function which doesn't throw an UnknownPropertyError
